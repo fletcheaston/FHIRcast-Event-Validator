@@ -10,10 +10,15 @@
   ],
   "type": "module",
   "license": "MIT",
-  "bin": "dist/index.js",
+  "bin": {
+    "fhircast-event-validator": "dist/index.js"
+  },
   "scripts": {
     "build": "ncc build src/index.ts -o dist"
   },
+  "files": [
+    "dist/**.js"
+  ],
   "dependencies": {
     "chalk": "^5.3.0",
     "ws": "^8.14.2",
