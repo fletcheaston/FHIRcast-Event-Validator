@@ -1,0 +1,49 @@
+{
+  "name": "fhircast-event-validator",
+  "description": "A simple tool for sending and validating FHIRcast messages",
+  "version": "0.0.1",
+  "contributors": [
+    {
+      "name": "Fletcher Easton",
+      "email": "fletcher.easton@radai.com"
+    }
+  ],
+  "type": "module",
+  "license": "MIT",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "ws": "^8.14.2",
+    "yargs": "^17.7.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.2.1",
+    "@types/node": "^20.8.10",
+    "@types/ws": "^8.5.8",
+    "@types/yargs": "^17.0.29",
+    "@vercel/ncc": "^0.38.1",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": false,
+    "singleAttributePerLine": true,
+    "plugins": [
+      "@trivago/prettier-plugin-sort-imports"
+    ],
+    "importOrder": [
+      "<THIRD_PARTY_MODULES>",
+      "^[./]"
+    ],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true
+  }
+}
