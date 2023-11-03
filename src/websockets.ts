@@ -31,17 +31,24 @@ export async function listenToFhirCastStream({
     verbose: boolean
 }) {
     // Connect to the FHIRcast topic
-    const response = await fetch(url, {
-        method: "POST",
-        body: serializedHubChannelRequest({
-            mode: "subscribe",
-            topic: topicId,
-            scopes: Object.values(HubChannelScope),
-        }),
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    })
+    let response
+
+    try {
+        response = await fetch(url, {
+            method: "POST",
+            body: serializedHubChannelRequest({
+                mode: "subscribe",
+                topic: topicId,
+                scopes: Object.values(HubChannelScope),
+            }),
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        })
+    } catch (err) {
+        console.log(chalk.red("Unable to subscribe to the FHIRcast Hub"))
+        throw new Error()
+    }
 
     const connectionData = await response.json()
     const parsedConnectionData = ZodHubChannelResponse.parse(connectionData)
@@ -50,7 +57,7 @@ export async function listenToFhirCastStream({
     const newWebSocket = new WebSocket(parsedConnectionData["hub.channel.endpoint"])
 
     newWebSocket.on("open", () => {
-        console.log(chalk.blue("Connected to the FHIRcast Hub."))
+        console.log(chalk.blue("Connected to the FHIRcast Hub"))
     })
 
     newWebSocket.on("message", (event) => {
@@ -58,16 +65,16 @@ export async function listenToFhirCastStream({
 
         if ("hub.topic" in message) {
             // Initial connection message, we can ignore this
-            console.log(chalk.blue(`Subscribed to topic '${topicId}'.`))
+            console.log(chalk.blue(`Subscribed to topic '${topicId}'`))
             return
         }
 
         const result = ZodFhirCastEvent.safeParse(message)
 
         if (result.success) {
-            console.log(chalk.green(`✅ Valid message: ${result.data.event["hub.event"]}.`))
+            console.log(chalk.green(`✅ Valid message: ${result.data.event["hub.event"]}`))
         } else {
-            console.log(chalk.red("❌ Invalid message."))
+            console.log(chalk.red("❌ Invalid message"))
             console.error(chalk.red(JSON.stringify(result.error.issues, null, 2)))
 
             if (verbose) {

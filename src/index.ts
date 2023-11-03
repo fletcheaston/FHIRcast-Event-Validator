@@ -24,14 +24,14 @@ yargs(hideBin(process.argv))
             })
 
             if (webSocket.OPEN) {
-                console.log(chalk.yellow("Press CTL + C to quit."))
+                console.log(chalk.yellow("Press CTL + C to quit"))
                 // Just sleep forever while our connection is open
                 while (webSocket.OPEN) {
                     await new Promise((resolve) => setTimeout(resolve, 1000))
                 }
             } else {
-                console.error("Unable to open WebSocket connection.")
-                console.error("Please ensure that your `url` is correct and your FHIRcast Hub is online.")
+                console.log(chalk.red("Unable to open WebSocket connection"))
+                console.log(chalk.red("Please ensure that your `url` is correct and your FHIRcast Hub is online"))
             }
         }
     )
