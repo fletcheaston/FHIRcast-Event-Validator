@@ -76,11 +76,11 @@ export async function listenToFhirCastStream({
         } else {
             console.log(chalk.red("❌ Invalid message"))
             console.error(chalk.red(JSON.stringify(result.error.issues, null, 2)))
+        }
 
-            if (verbose) {
-                console.log(chalk.whiteBright("👀 Raw message..."))
-                console.error(chalk.white(JSON.stringify(message, null, 2)))
-            }
+        if (verbose) {
+            console.log(chalk.whiteBright("👀 Raw message..."))
+            console.error(chalk.white(JSON.stringify(message, null, 2)))
         }
     })
 
