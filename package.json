@@ -1,7 +1,7 @@
 {
   "name": "fhircast-event-validator",
   "description": "A simple tool for sending and validating FHIRcast messages",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "contributors": [
     {
       "name": "Fletcher Easton",

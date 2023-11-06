@@ -34,7 +34,43 @@ Provides some additional information when validation errors occur.
 npx fhircast-event-validator listen --verbose
 ```
 
+---
+
+## Publish
+
+The same `url` and `topic` options used for `listen` apply here as well.
+
+### DiagnosticReport-open
+
+Publish a `DiagnosticReport-open` event.
+
+```shell
+npx fhircast-event-validator publish diagnostic-report-open
+```
+
+### DiagnosticReport-opened
+
+Publish a `DiagnosticReport-opened` event.
+
+```shell
+npx fhircast-event-validator publish diagnostic-report-opened
+```
+
+### DiagnosticReport-update
+
+Publish a `DiagnosticReport-update` event.
+
+```shell
+npx fhircast-event-validator publish diagnostic-report-update
+```
+
+Publish a `DiagnosticReport-update` event with a custom status.
+
+```shell
+npx fhircast-event-validator publish diagnostic-report-update --status "{status}"
+```
+
 ## TODO
 
-- [ ] Add command to publish messages
+- [x] Add command to publish messages
 - [ ] Provide authentication options
