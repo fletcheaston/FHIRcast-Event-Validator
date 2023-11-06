@@ -1,9 +1,11 @@
 import { z } from "zod"
 
 export enum HubChannelScope {
-    PatientOpen = "patient-open",
-    ImagingStudyOpen = "imagingstudy-open",
+    PatientOpen = "Patient-open",
+    ImagingStudyOpen = "ImagingStudy-open",
     DiagnosticReportOpen = "DiagnosticReport-open",
+    DiagnosticReportOpened = "DiagnosticReport-opened",
+    DiagnosticReportUpdate = "DiagnosticReport-update",
 }
 
 /****************************************************************************/
@@ -51,6 +53,26 @@ const ZodFhirResourceDiagnosticReport = z.object({
     }),
 })
 
+const ZodFhirResourceDiagnosticReportPut = z.object({
+    key: z.literal("updates"),
+    resource: z.object({
+        resourceType: z.literal("Bundle"),
+        type: z.literal("transaction"),
+        entry: z.array(
+            z.object({
+                request: z.object({
+                    method: z.literal("PUT"),
+                }),
+                resource: z.object({
+                    resourceType: z.literal("DiagnosticReport"),
+                    id: z.string(),
+                    status: z.string(),
+                }),
+            })
+        ),
+    }),
+})
+
 const ZodFhirResourceImagingStudy = z.object({
     key: z.literal("study"),
     resource: z.object({
@@ -61,6 +83,20 @@ const ZodFhirResourceImagingStudy = z.object({
         status: z.string(),
         identifier: z.array(z.union([ZodFhirFragmentComplexIdentifier, ZodFhirFragmentSimpleIdentifier])),
         subject: ZodFhirFragmentReference,
+    }),
+})
+
+const ZodFhirResourceOperationOutcome = z.object({
+    key: z.literal("OperationOutcome"),
+    reference: ZodFhirFragmentReference,
+    resource: z.object({
+        resourceType: z.literal("OperationOutcome"),
+        issue: z.array(
+            z.object({
+                severity: z.string(),
+                diagnostics: z.string(),
+            })
+        ),
     }),
 })
 
@@ -85,6 +121,20 @@ const ZodFhirCastEventDiagnosticReportOpen = z.object({
     ),
 })
 
+const ZodFhirCastEventDiagnosticReportOpened = z.object({
+    "hub.event": z.literal(HubChannelScope.DiagnosticReportOpened),
+    "hub.topic": z.string(),
+    context: z.array(z.discriminatedUnion("key", [ZodFhirResourceOperationOutcome])),
+})
+
+const ZodFhirCastEventDiagnosticReportUpdate = z.object({
+    "hub.event": z.literal(HubChannelScope.DiagnosticReportUpdate),
+    "hub.topic": z.string(),
+    context: z.array(
+        z.discriminatedUnion("key", [ZodFhirResourceDiagnosticReport, ZodFhirResourceDiagnosticReportPut])
+    ),
+})
+
 const ZodFhirCastEventImagingStudyOpen = z.object({
     "hub.event": z.literal(HubChannelScope.ImagingStudyOpen),
     "hub.topic": z.string(),
@@ -94,6 +144,8 @@ const ZodFhirCastEventImagingStudyOpen = z.object({
 const ZodFhirCastHubEvent = z.discriminatedUnion("hub.event", [
     ZodFhirCastEventPatientOpen,
     ZodFhirCastEventDiagnosticReportOpen,
+    ZodFhirCastEventDiagnosticReportOpened,
+    ZodFhirCastEventDiagnosticReportUpdate,
     ZodFhirCastEventImagingStudyOpen,
 ])
 
@@ -106,45 +158,20 @@ export const ZodFhirCastEvent = z.object({
 /****************************************************************************/
 /* Types that match Zod parsers */
 export type FhirCastEventPatientOpen = z.infer<typeof ZodFhirCastEventPatientOpen>
-
-export function isFhirCastEventPatientOpen(event: any): event is FhirCastEvent<FhirCastEventPatientOpen> {
-    return isFhirCastEvent(event) && event.event["hub.event"] === HubChannelScope.PatientOpen
-}
-
 export type FhirCastEventDiagnosticReportOpen = z.infer<typeof ZodFhirCastEventDiagnosticReportOpen>
-
-export function isFhirCastEventDiagnosticReportOpen(
-    event: any
-): event is FhirCastEvent<FhirCastEventDiagnosticReportOpen> {
-    return isFhirCastEvent(event) && event.event["hub.event"] === HubChannelScope.DiagnosticReportOpen
-}
-
+export type FhirCastEventDiagnosticReportOpened = z.infer<typeof ZodFhirCastEventDiagnosticReportOpened>
+export type FhirCastEventDiagnosticReportUpdate = z.infer<typeof ZodFhirCastEventDiagnosticReportUpdate>
 export type FhirCastEventImagingStudyOpen = z.infer<typeof ZodFhirCastEventImagingStudyOpen>
 
-export function isFhirCastEventImagingStudyOpen(event: any): event is FhirCastEvent<FhirCastEventImagingStudyOpen> {
-    return isFhirCastEvent(event) && event.event["hub.event"] === HubChannelScope.ImagingStudyOpen
-}
-
-type FhirCastHubEvent = FhirCastEventPatientOpen | FhirCastEventDiagnosticReportOpen | FhirCastEventImagingStudyOpen
+type FhirCastHubEvent =
+    | FhirCastEventPatientOpen
+    | FhirCastEventDiagnosticReportOpen
+    | FhirCastEventDiagnosticReportOpened
+    | FhirCastEventDiagnosticReportUpdate
+    | FhirCastEventImagingStudyOpen
 
 export interface FhirCastEvent<T extends FhirCastHubEvent> extends z.infer<typeof ZodFhirCastEvent> {
     timestamp: string
     id: string
     event: T
-}
-
-function isFhirCastEvent(event: any): event is FhirCastEvent<any> {
-    if (typeof event !== "object") {
-        return false
-    }
-
-    if (!("event" in event)) {
-        return false
-    }
-
-    if (!("hub.event" in event.event)) {
-        return false
-    }
-
-    return true
 }
